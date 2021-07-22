@@ -1,40 +1,48 @@
 class Solution(object):
     def alienOrder(self, words):
-        map = {}
-        letters = [0 for i in range(26)]  
-        for i in range(len(words)):
-            for j in range(len(words[i])):
-                key=ord(words[i][j])-ord('a')
-                letters[key]=0
-                map[key]=set()
+        """
+        :type words: List[str]
+        :rtype: str
+        """
+        def dfs(i):
+            seen[i] = 0
+            for nei in graph[i]:
+                if nei in seen:
+                    if seen[nei] == 0:
+                        return False
+                else:
+                    if not dfs(nei):
+                        return False
+            seen[i] = 1
+            res.appendleft(i)
+            return True
         
+        # records all characters appeared in words
+        nodes = set()
+        for word in words:
+            nodes |= set(word)
+        
+        # construct the graph
+        graph = collections.defaultdict(set)
         for i in range(len(words)-1):
-            word1 = words[i]
-            word2 = words[i+1]
-            idx = 0
-            for j in range(min(len(word1),len(word2))):
-                if(word1[j]!=word2[j]):
-                    key1 = ord(word1[j])-ord('a')
-                    key2 = ord(word2[j])-ord('a')
-                    count = letters[key2]
-                    if(key2 not in map[key1]):
-                        letters[key2] =count+1
-                        map[key1].add(key2)
+            k = 0
+            diff = False
+            while k < len(words[i]) and k < len(words[i+1]):
+                if words[i][k] != words[i+1][k]:
+                    graph[words[i][k]].add(words[i+1][k])
+                    diff = True
                     break
-        dictionary = collections.deque()
-        res = ''
-        for i in range(26):
-            if(letters[i]==0 and i in map):
-                dictionary.appendleft(i)
+                else:
+                    k += 1
+            if not diff and len(words[i]) > len(words[i+1]):
+                return ""
+                
         
-        while(len(dictionary)!=0):
-            nextup = dictionary.pop()
-            res+=(chr(nextup+ord('a')))
-            greaterSet = map[nextup]
-            for greater in greaterSet:
-                letters[greater]-=1
-                if(letters[greater]==0):
-                    dictionary.appendleft(greater)
-        if(len(map)!=len(res)):
-            return ""
-        return res
+        # topologically sort the characters
+        res = collections.deque()
+        seen = {}
+        for i in nodes:
+            if i not in seen:
+                if not dfs(i):
+                    return ""
+        return "".join(res)
