@@ -1,13 +1,33 @@
 class Solution:
-    def findJudge(self, N: int, trust: List[List[int]]) -> int:
-        if N==1:
-            return 1
-        ans = []
-        for i in range(len(trust)):
-            ans.append(trust[i][1])
-        counts = collections.Counter(ans)
-        y = sorted(ans, key=counts.get, reverse=True)[0]
-        for i in range(len(trust)):
-            if trust[i][0] == y:
-                return -1
-        return y
+    def findJudge(self, n: int, trust: List[List[int]]) -> int:
+        d = {}
+        for i in trust:
+            try:
+                x = d[i[0]]
+                x.append(i[1])
+                d[i[0]] = x
+            except KeyError:
+                d[i[0]] = [i[1]]
+        
+        townjudgeCandidates = []
+        for i in range(1,n+1):
+            try:
+                x = d[i]
+            except KeyError:
+                d[i] = []
+                townjudgeCandidates.append(i)
+        
+        if len(townjudgeCandidates) == 0:
+            return -1
+        
+        found = True
+        for cand in townjudgeCandidates:
+            for i in range(1,n+1):
+                if i != cand:
+                    if cand not in d[i]:
+                        found = False
+                        break
+            if found == True:
+                return cand
+        if found == False:
+            return -1
